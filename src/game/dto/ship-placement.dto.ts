@@ -4,13 +4,11 @@ export class ShipPlacementDto {
 
   @IsString()
   @IsNotEmpty()
-  public readonly id: string;
+  public readonly gameId: string;
 
-  @Min(1)
-  @Max(4)
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  public readonly shipType: number;
+  public readonly shipId: string;
 
   @Min(1)
   @Max(10)
@@ -25,7 +23,7 @@ export class ShipPlacementDto {
   public readonly y: number;
 
   @Min(1)
-  @Max(4)
+  @Max(2)
   @IsNotEmpty()
   public readonly rotate: number;
 }
