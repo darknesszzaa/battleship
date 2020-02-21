@@ -15,6 +15,7 @@ export class NewGameDto extends BaseDto {
     this._mapper = {
       'gameId': '_id',
       'isConfirmShipPlacement': 'isConfirmShipPlacement',
+      'isCompleted': 'isCompleted',
       'ship[].shipId': 'ship[]._id',
       'ship[].isPlace': 'ship[].isPlace',
       'ship[].shipType': 'ship[].shipType',

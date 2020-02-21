@@ -29,7 +29,7 @@ export class GameService {
     private readonly gameModel: Model<Game>,
   ) { }
 
-  public async getStatus(id: string): Promise<GameDto> {
+  public async getStatus(id: string): Promise<Game> {
     try {
       const data = await this.gameModel.findOne({ _id: id });
       if (data) {
@@ -56,20 +56,16 @@ export class GameService {
       };
 
       // initial battle ship
-      const totalBattleShip = TOTAL_BATTLE_SHIP;
-      await this.initialShip(game, totalBattleShip, ShipTypeEnum.Battleship, SIZE_BATTLE_SHIP);
+      await this.initialShip(game, TOTAL_BATTLE_SHIP, ShipTypeEnum.Battleship, SIZE_BATTLE_SHIP);
 
       // initial cruiser
-      const totalCruiser = TOTAL_CRUISER;
-      await this.initialShip(game, totalCruiser, ShipTypeEnum.Cruiser, SIZE_CRUISER);
+      await this.initialShip(game, TOTAL_CRUISER, ShipTypeEnum.Cruiser, SIZE_CRUISER);
 
       // initial cruiser
-      const totalDestroyer = TOTAL_DESTROYER;
-      await this.initialShip(game, totalDestroyer, ShipTypeEnum.Destroyer, SIZE_DESTROYER);
+      await this.initialShip(game, TOTAL_DESTROYER, ShipTypeEnum.Destroyer, SIZE_DESTROYER);
 
       // initial cruiser
-      const totalSubmarine = TOTAL_SUBMARINE;
-      await this.initialShip(game, totalSubmarine, ShipTypeEnum.Submarine, SIZE_SUBMARINE);
+      await this.initialShip(game, TOTAL_SUBMARINE, ShipTypeEnum.Submarine, SIZE_SUBMARINE);
 
       const createdGame = new this.gameModel(game);
       return createdGame.save(game);
