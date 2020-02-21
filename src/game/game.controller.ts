@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AttackDto } from './dto/attack.dto';
+import { ConfirmShipPleacementDto } from './dto/confirm-ship-placement.dto';
 import { GameDto } from './dto/game.dto';
+import { JoinGameDto } from './dto/join-game.dto';
 import { ShipPlacementDto } from './dto/ship-placement.dto';
 import { GameService } from './game.service';
 
@@ -41,10 +43,31 @@ export class GameController {
     }
   }
 
+  @Post('join-game')
+  public async joinGame(@Body() data: JoinGameDto) {
+    try {
+      const responseMessage = await this.gameService.joinGame(data);
+      return responseMessage;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   @Post('ship-placement')
   public async shipPlacement(@Body() data: ShipPlacementDto) {
     try {
       const responseMessage = await this.gameService.shipPlacement(data);
+      const dataResponse = new GameDto();
+      return dataResponse.toResponse(responseMessage);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  @Post('confirm-ship-placement')
+  public async confirmShipPlacement(@Body() data: ConfirmShipPleacementDto) {
+    try {
+      const responseMessage = await this.gameService.confirmShipPlacement(data);
       const dataResponse = new GameDto();
       return dataResponse.toResponse(responseMessage);
     } catch (error) {

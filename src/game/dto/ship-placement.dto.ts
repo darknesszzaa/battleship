@@ -11,13 +11,13 @@ export class ShipPlacementDto {
   public readonly shipId: string;
 
   @Min(1)
-  @Max(10)
+  @Max(Number(process.env.SIZE_HORIZON_GRID))
   @IsNumber()
   @IsNotEmpty()
   public readonly x: number;
 
   @Min(1)
-  @Max(10)
+  @Max(Number(process.env.SIZE_VERTICAL_GRID))
   @IsNumber()
   @IsNotEmpty()
   public readonly y: number;

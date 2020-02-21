@@ -1,19 +1,19 @@
 import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { RoleEnum } from 'src/common/share/enums/role.enum';
 
-export class AttackDto {
+export class JoinGameDto {
+
   @IsString()
   @IsNotEmpty()
   public readonly gameId: string;
 
   @Min(1)
-  @Max(Number(process.env.SIZE_HORIZON_GRID))
+  @Max(2)
   @IsNumber()
   @IsNotEmpty()
-  public readonly x: number;
+  public readonly role: number;
 
-  @Min(1)
-  @Max(Number(process.env.SIZE_VERTICAL_GRID))
-  @IsNumber()
+  @IsString()
   @IsNotEmpty()
-  public readonly y: number;
+  public readonly name: string;
 }
