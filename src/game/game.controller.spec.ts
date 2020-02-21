@@ -19,61 +19,61 @@ describe('Test scenarios', () => {
     await app.init();
   });
 
-  it(`should return initial game data`, () => {
+  it(`should create new game session`, () => {
     return request(server).post('/game/new-game').expect(201).expect(({ body }) => { game = body; });
   });
 
-  it(`should updated battleship placement data`, () => {
+  it(`should updated battleship defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[0].shipId, x: 1, y: 1, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Cruiser-1 placement data`, () => {
+  it(`should updated Cruiser-1 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[1].shipId, x: 1, y: 3, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Cruiser-2 placement data`, () => {
+  it(`should updated Cruiser-2 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[2].shipId, x: 1, y: 5, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Destroyer-1 placement data`, () => {
+  it(`should updated Destroyer-1 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[3].shipId, x: 1, y: 7, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Destroyer-2 placement data`, () => {
+  it(`should updated Destroyer-2 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[4].shipId, x: 1, y: 9, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Destroyer-3 placement data`, () => {
+  it(`should updated Destroyer-3 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[5].shipId, x: 6, y: 1, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Submarine-1 placement data`, () => {
+  it(`should updated Submarine-1 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[6].shipId, x: 6, y: 3, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Submarine-2 placement data`, () => {
+  it(`should updated Submarine-2 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[7].shipId, x: 6, y: 5, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Submarine-3 placement data`, () => {
+  it(`should updated Submarine-3 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[8].shipId, x: 6, y: 7, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated Submarine-4 placement data`, () => {
+  it(`should updated Submarine-4 defender ship placement`, () => {
     const data = { gameId: game.gameId, shipId: game.ship[9].shipId, x: 6, y: 9, rotate: 1 };
     return request(server).put('/game/ship-placement').send(data).expect(200);
   });
 
-  it(`should updated confirm ship placement`, () => {
+  it(`should updated confirm defender ship placement`, () => {
     const data = { gameId: game.gameId };
     return request(server).put('/game/confirm-ship-placement').send(data).expect(200);
   });
@@ -218,7 +218,7 @@ describe('Test scenarios', () => {
     return request(server).put('/game/attack').send(data).expect(200);
   });
 
-  it(`should game status`, () => {
+  it(`should get game status`, () => {
     return request(server).get('/game/status/' + game.gameId).expect(200);
   });
 
