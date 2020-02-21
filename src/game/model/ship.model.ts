@@ -4,6 +4,7 @@ export class ShipModel {
   public isPlace: boolean;
   public isSunk: boolean;
   public rotate: number;
-  public shipType: number;
+  public shipType: string;
   public size: number;
+  public totalHit: number;
 }

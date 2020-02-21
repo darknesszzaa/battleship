@@ -1,4 +1,4 @@
 export enum RotateEnum {
-    HORIZON = 1,
-    VERTICAL = 2,
+    Horizon = 1,
+    Vertical = 2,
 }

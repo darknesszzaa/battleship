@@ -2,31 +2,26 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AttackDto } from './dto/attack.dto';
 import { ConfirmShipPleacementDto } from './dto/confirm-ship-placement.dto';
 import { GameDto } from './dto/game.dto';
-import { JoinGameDto } from './dto/join-game.dto';
 import { ShipPlacementDto } from './dto/ship-placement.dto';
 import { GameService } from './game.service';
+import { GameBoardDto } from './dto/game-board.dto';
+import { NewGameDto } from './dto/new-game.dto';
 
 @Controller('game')
 export class GameController {
   constructor(private readonly gameService: GameService) { }
 
-  @Get()
-  public async findAll() {
-    const responseMessage = await this.gameService.findAll().then((list) => {
-      const dataResponse: GameDto = new GameDto();
-      return list.map((item) => {
-        return dataResponse.toResponse(item);
-      });
-    });
-    return responseMessage;
-  }
-
   @Get('status/:id')
   public async getStatus(@Param() param) {
     try {
       const responseMessage = await this.gameService.getStatus(param.id);
-      const dataResponse = new GameDto();
-      return dataResponse.toResponse(responseMessage);
+      if (responseMessage.isConfirmShipPlacement) {
+        const dataResponse = new GameBoardDto();
+        return dataResponse.toResponse(responseMessage);
+      } else {
+        const dataResponse = new GameDto();
+        return dataResponse.toResponse(responseMessage);
+      }
     } catch (error) {
       throw error;
     }
@@ -36,18 +31,8 @@ export class GameController {
   public async newGame() {
     try {
       const responseMessage = await this.gameService.newGame();
-      const dataResponse = new GameDto();
+      const dataResponse = new NewGameDto();
       return dataResponse.toResponse(responseMessage);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  @Post('join-game')
-  public async joinGame(@Body() data: JoinGameDto) {
-    try {
-      const responseMessage = await this.gameService.joinGame(data);
-      return responseMessage;
     } catch (error) {
       throw error;
     }
@@ -67,9 +52,7 @@ export class GameController {
   @Post('confirm-ship-placement')
   public async confirmShipPlacement(@Body() data: ConfirmShipPleacementDto) {
     try {
-      const responseMessage = await this.gameService.confirmShipPlacement(data);
-      const dataResponse = new GameDto();
-      return dataResponse.toResponse(responseMessage);
+      return await this.gameService.confirmShipPlacement(data);
     } catch (error) {
       throw error;
     }
@@ -78,9 +61,7 @@ export class GameController {
   @Post('attack')
   public async attack(@Body() data: AttackDto) {
     try {
-      const responseMessage = await this.gameService.attack(data);
-      const dataResponse = new GameDto();
-      return dataResponse.toResponse(responseMessage);
+      return await this.gameService.attack(data);
     } catch (error) {
       throw error;
     }

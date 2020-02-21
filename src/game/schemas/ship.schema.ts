@@ -6,6 +6,7 @@ export const ShipSchema = new mongoose.Schema({
   isPlace: Boolean,
   isSunk: Boolean,
   rotate: Number,
-  shipType: Number,
+  shipType: String,
   size: Number,
+  totalHit: Number,
 });

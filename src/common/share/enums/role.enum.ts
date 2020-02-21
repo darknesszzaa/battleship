@@ -1,4 +1,4 @@
 export enum RoleEnum {
-    DEFENDER = 1,
-    ATTACKER = 2,
+    Defender = 1,
+    Attacker = 2,
 }

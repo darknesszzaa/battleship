@@ -1,100 +1,39 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import { RotateEnum } from '../common/share/enums/rotate.enum';
 import { ShipTypeEnum } from '../common/share/enums/ship-type.enum';
 import { AttackDto } from './dto/attack.dto';
 import { ConfirmShipPleacementDto } from './dto/confirm-ship-placement.dto';
 import { GameDto } from './dto/game.dto';
-import { JoinGameDto } from './dto/join-game.dto';
 import { ShipPlacementDto } from './dto/ship-placement.dto';
 import { Game } from './interfaces/game.interface';
-import { PlayerModel } from './model/player.model';
 import { ShipModel } from './model/ship.model';
+import { AttackModel } from './model/attack.model';
 
 const SIZE_HORIZON_GRID = Number(process.env.SIZE_HORIZON_GRID);
 const SIZE_VERTICAL_GRID = Number(process.env.SIZE_VERTICAL_GRID);
-const GAP_SHIP = Number(process.env.GAP_SHIP);
-const SIZE_BATTLE_SHIP = Number(process.env.SIZE_BATTLE_SHIP);
-const SIZE_CRUISER = Number(process.env.SIZE_CRUISER);
-const SIZE_DESTROYER = Number(process.env.SIZE_DESTROYER);
-const SIZE_SUBMARINE = Number(process.env.SIZE_SUBMARINE);
+const GAP_SHIP = 1;
+const SIZE_BATTLE_SHIP = 4;
+const SIZE_CRUISER = 3;
+const SIZE_DESTROYER = 2;
+const SIZE_SUBMARINE = 3;
+const TOTAL_BATTLE_SHIP = 1;
+const TOTAL_CRUISER = 2;
+const TOTAL_DESTROYER = 3;
+const TOTAL_SUBMARINE = 4;
 
 @Injectable()
 export class GameService {
   constructor(
     @Inject('GAME_MODEL')
     private readonly gameModel: Model<Game>,
-    private readonly jwtService: JwtService,
   ) { }
-
-  public async findAll(): Promise<Game[]> {
-    try {
-      return this.gameModel.find();
-    } catch (error) {
-      throw error;
-    }
-  }
 
   public async getStatus(id: string): Promise<GameDto> {
     try {
-      return await this.gameModel.findOne({ _id: id });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async newGame(): Promise<Game> {
-    try {
-      const game = {
-        ship: [],
-        totalMove: 0,
-        attack: [],
-        isConfirmShipPlacement: false,
-        isCompleted: false,
-        palyer: [],
-      };
-
-      // initial battle ship
-      const totalBattleShip = Number(process.env.TOTAL_BATTLE_SHIP);
-      await this.initialShip(game, totalBattleShip, ShipTypeEnum.BATTLE_SHIP, SIZE_BATTLE_SHIP);
-
-      // initial cruiser
-      const totalCruiser = Number(process.env.TOTAL_CRUISER);
-      await this.initialShip(game, totalCruiser, ShipTypeEnum.CRUISER, SIZE_CRUISER);
-
-      // initial cruiser
-      const totalDestroyer = Number(process.env.TOTAL_DESTROYER);
-      await this.initialShip(game, totalDestroyer, ShipTypeEnum.DESTROYER, SIZE_DESTROYER);
-
-      // initial cruiser
-      const totalSubmarine = Number(process.env.TOTAL_SUBMARINE);
-      await this.initialShip(game, totalSubmarine, ShipTypeEnum.SUBMARINE, SIZE_SUBMARINE);
-
-      const createdGame = new this.gameModel(game);
-      return createdGame.save(game);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async joinGame(data: JoinGameDto): Promise<any> {
-    try {
-      const game = await this.gameModel.findOne({ _id: data.gameId });
-      if (game) {
-        for (const playerDB of game.player) {
-          if (playerDB.role === data.role) {
-            throw new HttpException('This role\'s already joined', HttpStatus.BAD_REQUEST);
-          }
-        }
-        const player: PlayerModel = Object.assign(new PlayerModel(), { role: data.role, name: data.name });
-        game.player.push(player);
-        await game.save();
-        const payload = { role: data.role };
-        return {
-          accessToken: this.jwtService.sign(payload),
-        };
-
+      const data = await this.gameModel.findOne({ _id: id });
+      if (data) {
+        return data;
       } else {
         throw new HttpException('Game ID is not found', HttpStatus.NOT_FOUND);
       }
@@ -102,6 +41,39 @@ export class GameService {
       if (error.name === 'CastError') {
         throw new HttpException('Game ID is not found', HttpStatus.NOT_FOUND);
       }
+      throw error;
+    }
+  }
+
+  public async newGame(): Promise<Game> {
+    try {
+      const game = {
+        totalMove: 0,
+        isConfirmShipPlacement: false,
+        isCompleted: false,
+        ship: [],
+        attack: [],
+      };
+
+      // initial battle ship
+      const totalBattleShip = TOTAL_BATTLE_SHIP;
+      await this.initialShip(game, totalBattleShip, ShipTypeEnum.Battleship, SIZE_BATTLE_SHIP);
+
+      // initial cruiser
+      const totalCruiser = TOTAL_CRUISER;
+      await this.initialShip(game, totalCruiser, ShipTypeEnum.Cruiser, SIZE_CRUISER);
+
+      // initial cruiser
+      const totalDestroyer = TOTAL_DESTROYER;
+      await this.initialShip(game, totalDestroyer, ShipTypeEnum.Destroyer, SIZE_DESTROYER);
+
+      // initial cruiser
+      const totalSubmarine = TOTAL_SUBMARINE;
+      await this.initialShip(game, totalSubmarine, ShipTypeEnum.Submarine, SIZE_SUBMARINE);
+
+      const createdGame = new this.gameModel(game);
+      return createdGame.save(game);
+    } catch (error) {
       throw error;
     }
   }
@@ -111,54 +83,51 @@ export class GameService {
       const gameDB = await this.gameModel.findOne({ _id: shipPlacementDtoData.gameId });
       if (gameDB) {
         if (!gameDB.isCompleted) {
-          if (gameDB.player.lenght === 2) {
-            if (!gameDB.isConfirmShipPlacement) {
+          if (!gameDB.isConfirmShipPlacement) {
 
-              let isValidShipId = false;
-              for (const shipDB of gameDB.ship) {
+            let isValidShipId = false;
+            for (const shipDB of gameDB.ship) {
 
-                if (shipPlacementDtoData.shipId === shipDB._id.toString()) {
-                  isValidShipId = true;
-                  switch (shipDB.shipType) {
-                    case ShipTypeEnum.BATTLE_SHIP:
-                      await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_BATTLE_SHIP, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
-                      break;
-                    case ShipTypeEnum.CRUISER:
-                      await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_CRUISER, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
-                      break;
-                    case ShipTypeEnum.DESTROYER:
-                      await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_DESTROYER, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
-                      break;
-                    case ShipTypeEnum.SUBMARINE:
-                      await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_SUBMARINE, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
-                      break;
-                    default:
-                      break;
-                  }
-
-                  shipDB.x = shipPlacementDtoData.x;
-                  shipDB.y = shipPlacementDtoData.y;
-                  shipDB.isPlace = true;
-                  shipDB.rotate = shipPlacementDtoData.rotate;
+              if (shipPlacementDtoData.shipId === shipDB._id.toString()) {
+                isValidShipId = true;
+                switch (shipDB.shipType) {
+                  case ShipTypeEnum.Battleship:
+                    await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_BATTLE_SHIP, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
+                    break;
+                  case ShipTypeEnum.Cruiser:
+                    await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_CRUISER, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
+                    break;
+                  case ShipTypeEnum.Destroyer:
+                    await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_DESTROYER, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
+                    break;
+                  case ShipTypeEnum.Submarine:
+                    await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_SUBMARINE, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
+                    break;
+                  default:
+                    break;
                 }
-              }
 
-              if (!isValidShipId) {
-                throw new HttpException('Ship ID is not found', HttpStatus.NOT_FOUND);
+                shipDB.x = shipPlacementDtoData.x;
+                shipDB.y = shipPlacementDtoData.y;
+                shipDB.isPlace = true;
+                shipDB.rotate = shipPlacementDtoData.rotate;
+                break;
               }
-
-              return gameDB.save();
-            } else {
-              throw new HttpException('Can\'t move after confirmd ship placement', HttpStatus.BAD_REQUEST);
             }
+
+            if (!isValidShipId) {
+              throw new HttpException('Ship ID is not found', HttpStatus.NOT_FOUND);
+            }
+
+            return gameDB.save();
           } else {
-            throw new HttpException('Need all player to join first', HttpStatus.BAD_REQUEST);
+            throw new HttpException('Can\'t move after confirmed ship placement', HttpStatus.BAD_REQUEST);
           }
         } else {
-          throw new HttpException('Game id is not found', HttpStatus.NOT_FOUND);
+          throw new HttpException('This game\'s already ended', HttpStatus.BAD_REQUEST);
         }
       } else {
-        throw new HttpException('This game\'s already ended', HttpStatus.NOT_FOUND);
+        throw new HttpException('Game id is not found', HttpStatus.NOT_FOUND);
       }
     } catch (error) {
       if (error.name === 'CastError') {
@@ -168,7 +137,7 @@ export class GameService {
     }
   }
 
-  public async confirmShipPlacement(data: ConfirmShipPleacementDto): Promise<Game> {
+  public async confirmShipPlacement(data: ConfirmShipPleacementDto): Promise<Object> {
     try {
       const game = await this.gameModel.findOne({ _id: data.gameId });
       if (game) {
@@ -183,42 +152,124 @@ export class GameService {
             }
             if (isCompletePlacement) {
               game.isConfirmShipPlacement = isCompletePlacement;
+              await game.save();
             } else {
-              throw new HttpException('Need to place all ship before confirm', HttpStatus.OK);
+              throw new HttpException('Need to place all ship before confirmed', HttpStatus.BAD_REQUEST);
             }
           } else {
-            throw new HttpException('Ship placement\'s already confirmd ', HttpStatus.TOO_MANY_REQUESTS);
+            throw new HttpException('Ship placement\'s already confirmed', HttpStatus.BAD_REQUEST);
           }
         } else {
-          throw new HttpException('This game\'s already ended', HttpStatus.NOT_FOUND);
+          throw new HttpException('This game\'s already ended', HttpStatus.BAD_REQUEST);
         }
-        return game.save();
+
+        return { message: 'Ship placement\'s confirm' }
+
       } else {
-        throw new HttpException('Game ID is Not Found', HttpStatus.NOT_FOUND);
+        throw new HttpException('Game ID is not found', HttpStatus.NOT_FOUND);
       }
     } catch (error) {
       if (error.name === 'CastError') {
-        throw new HttpException('Game ID is Not Found', HttpStatus.NOT_FOUND);
+        throw new HttpException('Game ID is not found', HttpStatus.NOT_FOUND);
       }
       throw error;
     }
   }
 
-  public async attack(data: AttackDto): Promise<Game> {
+  public async attack(data: AttackDto): Promise<Object> {
     try {
       const game = await this.gameModel.findOne({ _id: data.gameId });
       if (game) {
         if (!game.isCompleted) {
-          return game.save();
+          if (game.isConfirmShipPlacement) {
+            for (const attackDB of game.attack) {
+              if (attackDB.x === data.x && attackDB.y === data.y) {
+                throw new HttpException('This location\'s already attacked', HttpStatus.BAD_REQUEST);
+              }
+            }
+            let isHit = false;
+            let isSunk = false;
+            let shipSunkType;
+            for (const shipDB of game.ship) {
+              if (shipDB.rotate === RotateEnum.Horizon) {
+                if (data.x >= shipDB.x && data.x <= (shipDB.x + shipDB.size - 1) && data.y === shipDB.y) {
+                  const attackModel: AttackModel = Object.assign(new AttackModel(), { x: data.x, y: data.y, isHit: true });
+                  game.attack.push(attackModel);
+                  isHit = true;
+                  shipDB.totalHit = shipDB.totalHit + 1;
+                  if (shipDB.size === shipDB.totalHit) {
+                    shipDB.isSunk = true;
+                    isSunk = true;
+                    shipSunkType = shipDB.shipType;
+                  }
+                  break;
+                }
+              } else if (shipDB.rotate === RotateEnum.Vertical) {
+                if (data.y >= shipDB.y && data.y <= (shipDB.y + shipDB.size - 1) && data.x === shipDB.x) {
+                  const attackModel: AttackModel = Object.assign(new AttackModel(), { x: data.x, y: data.y, isHit: true });
+                  game.attack.push(attackModel);
+                  isHit = true;
+                  shipDB.totalHit = shipDB.totalHit + 1;
+                  if (shipDB.size === shipDB.totalHit) {
+                    shipDB.isSunk = true;
+                    isSunk = true;
+                    shipSunkType = shipDB.shipType;
+                  }
+                  break;
+                }
+              }
+            }
+            game.totalMove = game.totalMove + 1;
+            if (!isHit) {
+              const attackModel: AttackModel = Object.assign(new AttackModel(), { x: data.x, y: data.y, isHit: false });
+              game.attack.push(attackModel);
+              await game.save();
+              return { message: 'Miss' }
+            } else {
+              await game.save();
+              if (isSunk) {
+                let isAllSunk = true;
+                for (const shipDB of game.ship) {
+                  if (!shipDB.isSunk) {
+                    isAllSunk = false;
+                  }
+                }
+
+                if (isAllSunk) {
+                  game.isCompleted = true;
+                  await game.save();
+                  return { message: 'Win! You have completed the game in ' + game.totalMove + ' moves' }
+                } else {
+
+                  switch (shipSunkType) {
+                    case ShipTypeEnum.Battleship:
+                      return { message: 'You just sank a Battleship' }
+                    case ShipTypeEnum.Cruiser:
+                      return { message: 'You just sank a Cruiser' }
+                    case ShipTypeEnum.Destroyer:
+                      return { message: 'You just sank a Destroyer' }
+                    case ShipTypeEnum.Submarine:
+                      return { message: 'You just sank a Submarine' }
+                    default:
+                      return { message: 'You just sank a X' }
+                  }
+                }
+              } else {
+                return { message: 'Hit' }
+              }
+            }
+          } else {
+            throw new HttpException('Need to confirm ship placement first', HttpStatus.BAD_REQUEST);
+          }
         } else {
-          throw new HttpException('This game\'s already ended', HttpStatus.NOT_FOUND);
+          throw new HttpException('This game\'s already ended', HttpStatus.BAD_REQUEST);
         }
       } else {
-        throw new HttpException('Game ID is Not Found', HttpStatus.NOT_FOUND);
+        throw new HttpException('Game ID is not found', HttpStatus.NOT_FOUND);
       }
     } catch (error) {
       if (error.name === 'CastError') {
-        throw new HttpException('Game ID is Not Found', HttpStatus.NOT_FOUND);
+        throw new HttpException('Game ID is not found', HttpStatus.NOT_FOUND);
       }
       throw error;
     }
@@ -226,17 +277,17 @@ export class GameService {
 
   public async initialShip(game, total: number, shipType: ShipTypeEnum, size: number) {
     for (let index = 0; index < total; index++) {
-      const ship: ShipModel = Object.assign(new ShipModel(), { x: 0, y: 0, isPlace: false, isSunk: false, rotate: RotateEnum.HORIZON, shipType, size });
+      const ship: ShipModel = Object.assign(new ShipModel(), { x: 0, y: 0, isPlace: false, isSunk: false, rotate: RotateEnum.Horizon, shipType, size, totalHit: 0 });
       game.ship.push(ship);
     }
   }
 
   public async verifyShipPlacement(gameDB, x: number, y: number, dtoSize: number, rotate: RotateEnum, shipId: string) {
-    if (rotate === RotateEnum.HORIZON) {
+    if (rotate === RotateEnum.Horizon) {
       if (x + dtoSize - 1 > SIZE_HORIZON_GRID) {
         throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
       }
-    } else if (rotate === RotateEnum.VERTICAL) {
+    } else if (rotate === RotateEnum.Vertical) {
       if (y + dtoSize - 1 > SIZE_VERTICAL_GRID) {
         throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
       }
@@ -244,21 +295,21 @@ export class GameService {
 
     for (const shipDB of gameDB.ship) {
       if (shipDB.isPlace && shipDB._id.toString() !== shipId) {
-        if (rotate === RotateEnum.HORIZON && shipDB.rotate === RotateEnum.HORIZON) {
+        if (rotate === RotateEnum.Horizon && shipDB.rotate === RotateEnum.Horizon) {
           if (x > shipDB.x) {
-            if ((x - shipDB.x) <= shipDB.size + GAP_SHIP) {
+            if ((x - shipDB.x) <= shipDB.size - 1 + GAP_SHIP) {
               if (Math.abs(y - shipDB.y) <= GAP_SHIP) {
                 throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
               }
             }
           } else {
-            if ((shipDB.x - x) <= dtoSize + GAP_SHIP) {
+            if ((shipDB.x - x) <= dtoSize - 1 + GAP_SHIP) {
               if (Math.abs(y - shipDB.y) <= GAP_SHIP) {
                 throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
               }
             }
           }
-        } else if (rotate === RotateEnum.HORIZON && shipDB.rotate === RotateEnum.VERTICAL) {
+        } else if (rotate === RotateEnum.Horizon && shipDB.rotate === RotateEnum.Vertical) {
           if (x > shipDB.x) {
             if ((x - shipDB.x) <= GAP_SHIP) {
               if (y < shipDB.y) {
@@ -266,33 +317,33 @@ export class GameService {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               } else {
-                if (y - shipDB.y <= shipDB.size + GAP_SHIP) {
+                if (y - shipDB.y <= shipDB.size - 1 + GAP_SHIP) {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               }
             }
           } else {
-            if ((shipDB.x - x) <= dtoSize + GAP_SHIP) {
+            if ((shipDB.x - x) <= dtoSize - 1 + GAP_SHIP) {
               if (y < shipDB.y) {
                 if (Math.abs(y - shipDB.y) <= GAP_SHIP) {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               } else {
-                if (y - shipDB.y <= shipDB.size + GAP_SHIP) {
+                if (y - shipDB.y <= shipDB.size - 1 + GAP_SHIP) {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               }
             }
           }
-        } else if (rotate === RotateEnum.VERTICAL && shipDB.rotate === RotateEnum.HORIZON) {
+        } else if (rotate === RotateEnum.Vertical && shipDB.rotate === RotateEnum.Horizon) {
           if (x > shipDB.x) {
-            if ((x - shipDB.x) <= shipDB.size + GAP_SHIP) {
+            if ((x - shipDB.x) <= shipDB.size - 1 + GAP_SHIP) {
               if (y > shipDB.y) {
                 if (Math.abs(y - shipDB.y) <= GAP_SHIP) {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               } else {
-                if (shipDB.y - y <= dtoSize + GAP_SHIP) {
+                if (shipDB.y - y <= dtoSize - 1 + GAP_SHIP) {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               }
@@ -304,13 +355,13 @@ export class GameService {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               } else {
-                if (shipDB.y - y <= shipDB.size + GAP_SHIP) {
+                if (shipDB.y - y <= shipDB.size - 1 + GAP_SHIP) {
                   throw new HttpException('Invalid game moves', HttpStatus.BAD_REQUEST);
                 }
               }
             }
           }
-        } else if (rotate === RotateEnum.VERTICAL && shipDB.rotate === RotateEnum.VERTICAL) {
+        } else if (rotate === RotateEnum.Vertical && shipDB.rotate === RotateEnum.Vertical) {
           if (y > shipDB.y) {
             if ((y - shipDB.y) <= shipDB.size + GAP_SHIP) {
               if (Math.abs(x - shipDB.x) <= GAP_SHIP) {
