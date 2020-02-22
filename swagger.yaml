@@ -1,0 +1,184 @@
+swagger: '2.0'
+info:
+  version: '1.0'
+  title: Battleship
+  description: "Battleship board game API."
+  contact: {}
+host: localhost:3000
+basePath: /game
+schemes:
+- http
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+  /new-game:
+    post:
+      summary: New Game
+      tags:
+      - Battleship
+      operationId: NewGame
+      deprecated: false
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      responses:
+        200:
+          description: ''
+          headers: {}
+  /ship-placement:
+    put:
+      summary: Ship Placement
+      tags:
+      - Battleship
+      operationId: ShipPlacement
+      deprecated: false
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/ShipPlacementRequest'
+      responses:
+        200:
+          description: ''
+          headers: {}
+  /confirm-ship-placement:
+    put:
+      summary: Confirm Ship Placement
+      tags:
+      - Battleship
+      operationId: ConfirmShipPlacement
+      deprecated: false
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/ConfirmShipPlacementRequest'
+      responses:
+        200:
+          description: ''
+          headers: {}
+  /attack:
+    put:
+      summary: Attack
+      tags:
+      - Battleship
+      operationId: Attack
+      deprecated: false
+      produces:
+      - application/json
+      consumes:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/AttackRequest'
+      responses:
+        200:
+          description: ''
+          headers: {}
+  /status/{gameId}:
+    get:
+      summary: Get Game Status
+      tags:
+      - Battleship
+      operationId: GetGameStatus
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: "gameId"
+        in: "path"
+        description: game id
+        required: true
+        type: string
+
+      responses:
+        200:
+          description: ''
+          headers: {}
+definitions:
+  ShipPlacementRequest:
+    title: ShipPlacementRequest
+    example:
+      gameId: 5e4ffeaba8c886016c9a05fa
+      shipId: 5e4ffeaba8c886016c9a0604
+      x: 10
+      y: 6
+      rotate: 2
+    type: object
+    properties:
+      gameId:
+        type: string
+      shipId:
+        type: string
+      x:
+        type: integer
+        format: int32
+        description: "Min 1 , Max 10"
+      y:
+        type: integer
+        format: int32
+        description: "Min 1 , Max 10"
+      rotate:
+        type: integer
+        format: int32
+        description: "1 = Horizon, 2 = Vertical"
+    required:
+    - gameId
+    - shipId
+    - x
+    - y
+    - rotate
+  ConfirmShipPlacementRequest:
+    title: ConfirmShipPlacementRequest
+    example:
+      gameId: 5e4ffeaba8c886016c9a05fa
+    type: object
+    properties:
+      gameId:
+        type: string
+    required:
+    - gameId
+  AttackRequest:
+    title: AttackRequest
+    example:
+      gameId: 5e4ffeaba8c886016c9a05fa
+      x: 10
+      y: 8
+    type: object
+    properties:
+      gameId:
+        type: string
+      x:
+        type: integer
+        format: int32
+        description: "Min 1 , Max 10"
+      y:
+        type: integer
+        format: int32
+        description: "Min 1 , Max 10"
+    required:
+    - gameId
+    - x
+    - y
+tags:
+- name: Battleship
+  description: 'Battleship management'
