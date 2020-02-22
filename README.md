@@ -2,7 +2,7 @@
 
 ### Installation
 
-### Istall and run the server with Docker
+### Install and run the server with Docker
 
 There is a `docker-compose.yml` file for starting Docker.
 
@@ -12,7 +12,7 @@ After running the server, you can stop the Docker container with
 
 `docker-compose down`
 
-### Istall with local
+### Install with local
 
 `npm install`
 
