@@ -10,8 +10,10 @@ services:
       - 3000:3000
     env_file:
       - .env
+    environment:
+      - MONGO_CONNECTION_URL=mongodb://mongo:27017/battleship
     depends_on:
-      - mongo   
+      - mongo
   mongo:
     image: mongo:latest
     restart: always
