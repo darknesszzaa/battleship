@@ -1,10 +1,10 @@
 import { AttackModel } from '../model/attack.model';
 import { BaseDto } from './base.dto';
-import { ShipNewGameModel } from '../model/ship-newgame.model';
+import { ShipModel } from '../model/ship.model';
 
 export class NewGameDto extends BaseDto {
   public gameId: string;
-  public ship: ShipNewGameModel[];
+  public ship: ShipModel[];
   public totalMove: number;
   public attack: AttackModel[];
   public isCompleted: boolean;

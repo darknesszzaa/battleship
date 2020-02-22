@@ -111,8 +111,6 @@ export class GameService {
                   case ShipTypeEnum.Submarine:
                     await this.verifyShipPlacement(gameDB, shipPlacementDtoData.x, shipPlacementDtoData.y, SIZE_SUBMARINE, shipPlacementDtoData.rotate, shipPlacementDtoData.shipId);
                     break;
-                  default:
-                    break;
                 }
 
                 shipDB.x = shipPlacementDtoData.x;
@@ -266,8 +264,6 @@ export class GameService {
                       return { message: 'You just sank a Destroyer' }
                     case ShipTypeEnum.Submarine:
                       return { message: 'You just sank a Submarine' }
-                    default:
-                      return { message: 'You just sank a X' }
                   }
                 }
               } else {
