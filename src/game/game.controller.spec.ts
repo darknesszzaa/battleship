@@ -304,14 +304,18 @@ describe('Test scenarios', () => {
     return request(server).put('/game/attack').send(data).expect(200);
   });
 
-  it(`should updated attack-24`, () => {
+  it(`should updated attack-24`, async () => {
     const data = { gameId: game.gameId, x: 6, y: 9, };
-    return request(server).put('/game/attack').send(data).expect(200);
+    const response = await request(server).put('/game/attack').send(data).expect(200);
+    const expectedString = 'Hit';
+    expect(response.body.message).toEqual(expectedString);
   });
 
-  it(`should updated attack-25`, () => {
+  it(`should updated attack-25`, async () => {
     const data = { gameId: game.gameId, x: 6, y: 10, };
-    return request(server).put('/game/attack').send(data).expect(200);
+    const response = await request(server).put('/game/attack').send(data).expect(200);
+    const expectedString = 'You just sank a Submarine';
+    expect(response.body.message).toEqual(expectedString);
   });
 
   it(`should updated attack-26`, () => {
@@ -324,14 +328,18 @@ describe('Test scenarios', () => {
     return request(server).put('/game/attack').send(data).expect(200);
   });
 
-  it(`should updated attack-28 miss`, () => {
+  it(`should updated attack-28 miss`, async () => {
     const data = { gameId: game.gameId, x: 10, y: 10, };
-    return request(server).put('/game/attack').send(data).expect(200);
+    const response = await request(server).put('/game/attack').send(data).expect(200);
+    const expectedString = 'Miss';
+    expect(response.body.message).toEqual(expectedString);
   });
 
-  it(`should updated attack-29`, () => {
+  it(`should updated attack-29`, async () => {
     const data = { gameId: game.gameId, x: 9, y: 6, };
-    return request(server).put('/game/attack').send(data).expect(200);
+    const response = await request(server).put('/game/attack').send(data).expect(200);
+    const expectedString = 'Win! You have completed the game in 29 moves';
+    expect(response.body.message).toEqual(expectedString);
   });
 
   it(`should get game status`, () => {
@@ -420,7 +428,7 @@ describe('Test error', () => {
   });
 
   it(`should error 404 with confirm defender ship placement because wrong game id`, () => {
-    const data = { gameId: '5e4ffeaba8c886016c9a05fb'};
+    const data = { gameId: '5e4ffeaba8c886016c9a05fb' };
     return request(server).put('/game/confirm-ship-placement').send(data).expect(404);
   });
 
