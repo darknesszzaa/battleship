@@ -11,6 +11,10 @@ import { NewGameDto } from './dto/new-game.dto';
 export class GameController {
   constructor(private readonly gameService: GameService) { }
 
+  /**
+   * Get game status by using game ID for query
+   * @param param 
+   */
   @Get('status/:id')
   public async getStatus(@Param() param) {
     try {
@@ -27,6 +31,9 @@ export class GameController {
     }
   }
 
+  /**
+   * New game session
+   */
   @Post('new-game')
   public async newGame() {
     try {
@@ -38,6 +45,10 @@ export class GameController {
     }
   }
 
+  /**
+   * Ship placement set location and rotate of ship
+   * @param data 
+   */
   @Put('ship-placement')
   public async shipPlacement(@Body() data: ShipPlacementDto) {
     try {
@@ -49,6 +60,10 @@ export class GameController {
     }
   }
 
+  /**
+   * Confirm ship placement
+   * @param data 
+   */
   @Put('confirm-ship-placement')
   public async confirmShipPlacement(@Body() data: ConfirmShipPleacementDto) {
     try {
@@ -58,6 +73,10 @@ export class GameController {
     }
   }
 
+  /**
+   * Attack make location to attack ship
+   * @param data 
+   */
   @Put('attack')
   public async attack(@Body() data: AttackDto) {
     try {

@@ -1,11 +1,12 @@
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import * as request from 'supertest';
 import { AppModule } from '../app.module';
 
-let game;
+
 
 describe('Test scenarios', () => {
+  let game;
   let server;
   let app: INestApplication;
 
@@ -15,6 +16,7 @@ describe('Test scenarios', () => {
     }).compile();
 
     app = module.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
     server = app.getHttpServer();
     await app.init();
   });
@@ -226,3 +228,79 @@ describe('Test scenarios', () => {
     await app.close();
   });
 });
+
+
+describe('Test error', () => {
+  let game;
+  let server;
+  let app: INestApplication;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = module.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
+    server = app.getHttpServer();
+    await app.init();
+  });
+
+  it(`should create new game session`, () => {
+    return request(server).post('/game/new-game').expect(201).expect(({ body }) => { game = body; });
+  });
+
+  it(`should error 400 with updated ship placement with invalid dto`, () => {
+    const data = { test: "test" };
+    return request(server).put('/game/ship-placement').send(data).expect(400);
+  });
+
+  it(`should error 404 with updated ship placement with wrong game id`, () => {
+    const data = { gameId: '1234', shipId: game.ship[0].shipId, x: 1, y: 1, rotate: 1 };
+    return request(server).put('/game/ship-placement').send(data).expect(404);
+  });
+
+  it(`should error 404 with updated ship placement with wrong ship id`, () => {
+    const data = { gameId: game.gameId, shipId: '1234', x: 1, y: 1, rotate: 1 };
+    return request(server).put('/game/ship-placement').send(data).expect(404);
+  });
+
+  it(`should error 400 with confirm defender ship placement with invalid dto`, () => {
+    const data = {};
+    return request(server).put('/game/confirm-ship-placement').send(data).expect(400);
+  });
+
+  it(`should error 400 with confirm defender ship placement but still not complete all ship placement`, () => {
+    const data = { gameId: game.gameId };
+    return request(server).put('/game/confirm-ship-placement').send(data).expect(400);
+  });
+
+  it(`should error 404 with confirm defender ship placement with wrong game id`, () => {
+    const data = { gameId: '1234' };
+    return request(server).put('/game/confirm-ship-placement').send(data).expect(404);
+  });
+
+  it(`should error 400 with updated attack-1 with invalid dto`, () => {
+    const data = {};
+    return request(server).put('/game/attack').send(data).expect(400);
+  });
+
+  it(`should error 400 with updated attack-1 but not confirm defender ship placement`, () => {
+    const data = { gameId: game.gameId, x: 1, y: 1 };
+    return request(server).put('/game/attack').send(data).expect(400);
+  });
+
+  it(`should error 404 with updated attack-1 with wrong game id`, () => {
+    const data = { gameId: '1234', x: 1, y: 1 };
+    return request(server).put('/game/attack').send(data).expect(404);
+  });
+
+  it(`should error 404 with get game status with wrong game id`, () => {
+    return request(server).get('/game/status/' + '1234').expect(404);
+  });
+
+  afterEach(async () => {
+    await app.close();
+  });
+});
+

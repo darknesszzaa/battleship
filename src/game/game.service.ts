@@ -29,6 +29,10 @@ export class GameService {
     private readonly gameModel: Model<Game>,
   ) { }
 
+  /**
+   * Get game status by using game ID for query
+   * @param id 
+   */
   public async getStatus(id: string): Promise<Game> {
     try {
       const data = await this.gameModel.findOne({ _id: id });
@@ -45,6 +49,9 @@ export class GameService {
     }
   }
 
+  /**
+   * New game session and generate game data and store in MongoDB
+   */
   public async newGame(): Promise<Game> {
     try {
       const game = {
@@ -74,6 +81,10 @@ export class GameService {
     }
   }
 
+  /**
+   * Ship placement set location and rotate of ship
+   * @param shipPlacementDtoData 
+   */
   public async shipPlacement(shipPlacementDtoData: ShipPlacementDto): Promise<Game> {
     try {
       const gameDB = await this.gameModel.findOne({ _id: shipPlacementDtoData.gameId });
@@ -133,6 +144,10 @@ export class GameService {
     }
   }
 
+  /**
+   * Confirm ship placement
+   * @param data 
+   */
   public async confirmShipPlacement(data: ConfirmShipPleacementDto): Promise<Object> {
     try {
       const game = await this.gameModel.findOne({ _id: data.gameId });
@@ -172,6 +187,10 @@ export class GameService {
     }
   }
 
+  /**
+   * Attack make location to attack ship
+   * @param data 
+   */
   public async attack(data: AttackDto): Promise<Object> {
     try {
       const game = await this.gameModel.findOne({ _id: data.gameId });
@@ -271,6 +290,13 @@ export class GameService {
     }
   }
 
+  /**
+   * Initial Ship data and set into game data
+   * @param game 
+   * @param total 
+   * @param shipType 
+   * @param size 
+   */
   public async initialShip(game, total: number, shipType: ShipTypeEnum, size: number) {
     for (let index = 0; index < total; index++) {
       const ship: ShipModel = Object.assign(new ShipModel(), { x: 0, y: 0, isPlace: false, isSunk: false, rotate: RotateEnum.Horizon, shipType, size, totalHit: 0 });
@@ -278,6 +304,15 @@ export class GameService {
     }
   }
 
+  /**
+   * Verify ship placement logic
+   * @param gameDB 
+   * @param x 
+   * @param y 
+   * @param dtoSize 
+   * @param rotate 
+   * @param shipId 
+   */
   public async verifyShipPlacement(gameDB, x: number, y: number, dtoSize: number, rotate: RotateEnum, shipId: string) {
     if (rotate === RotateEnum.Horizon) {
       if (x + dtoSize - 1 > SIZE_HORIZON_GRID) {
