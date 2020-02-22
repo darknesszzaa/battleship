@@ -6,6 +6,7 @@ export const GameSchema = new mongoose.Schema({
   totalMove: Number,
   isConfirmShipPlacement: Boolean,
   isCompleted: Boolean,
-  ship:  [ShipSchema],
+  createAt: Date,
+  ship: [ShipSchema],
   attack: [AttackSchema],
 });

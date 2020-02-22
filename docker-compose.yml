@@ -1,9 +1,24 @@
 version: "3"
 
 services:
-  mongodb:
+  battleship:
+    container_name: battleship
+    build: .
+    restart: always
+    image: battleship:1.0.0
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    depends_on:
+      - mongo   
+  mongo:
     image: mongo:latest
+    restart: always
     environment:
       - MONGODB_DATABASE="battleship"
     ports:
       - 27017:27017
+
+   
+      

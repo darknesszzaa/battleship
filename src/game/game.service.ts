@@ -58,6 +58,7 @@ export class GameService {
         totalMove: 0,
         isConfirmShipPlacement: false,
         isCompleted: false,
+        createAt: new Date(),
         ship: [],
         attack: [],
       };
