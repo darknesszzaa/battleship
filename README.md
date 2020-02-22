@@ -38,6 +38,6 @@ Test coverage
 
 After running the server, you can see API document on this URL
 
-`http://localhost:3000/api-docs/`
+http://localhost:3000/api-docs/
 
 Enjoy the game...
